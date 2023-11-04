@@ -3,10 +3,8 @@ import joblib
 import numpy as np
 import pandas as pd
 
-# Load the model
 model = joblib.load("Spotify_SongDanceability_Predicter.pkl")
 
-# Load the model information
 model_info = joblib.load("model_info.pkl")
 
 print(model_info["features"])
@@ -15,39 +13,29 @@ st.title("Predict a Songs Danceability")
 st.write("This is a ridge linear regression model")
 st.write("Due to the small dataset size the accuracy is 34%")
 
-feature_values = {}
+bpm = st.number_input(f"Enter Song bpm", min_value=65, max_value=300)
+energy_ = st.number_input(f"Enter Song Energy %", min_value=1, max_value=100)
+acousticness_ = st.number_input(f"Enter Accousticness %", min_value=1, max_value=100)
+in_spotify_playlists = st.number_input(f"Enter in total spotify playlist", min_value=1)
+speechiness_ = st.number_input(f"Enter Speechiness %", min_value=1, max_value=100)
+valence_ = st.number_input(f"Enter Song Positive %", min_value=1, max_value=100)
+artist_count = st.number_input(f"Enter artist count", min_value=1, max_value=10)
 
-for feature in model_info["features"]:
-    if feature == 'artist_count':
-        feature_values[feature] = st.number_input(f"Enter {feature}", min_value=1, max_value=8)
-    elif feature == 'valence_%': 
-        st.markdown("""---""")
-        st.write("The musical positiveness:")
-        feature_values[feature] = st.number_input(f"Enter {feature}", min_value=1)
-    elif feature == 'in_spotify_playlists': 
-        st.markdown("""---""")
-        st.write("In how many spotify playlists:")
-        feature_values[feature] = st.number_input(f"Enter {feature}", min_value=1)
-    elif feature == 'speechiness_%': 
-        st.markdown("""---""")
-        st.write("How much they sing in %")
-        feature_values[feature] = st.number_input(f"Enter {feature}", min_value=1)
-    elif feature == 'bpm': 
-        st.markdown("""---""")
-        st.write("300bpm limit")
-        feature_values[feature] = st.number_input(f"Enter {feature}", min_value=65, max_value=300)
-    else:
-        feature_values[feature] = st.number_input(f"Enter {feature}", min_value=1)
-        
-        
-columns_to_log = ['bpm', 'in_spotify_playlists', 'speechiness_%', 'artist_count'] 
+test_data = {
+    'bpm': np.log(bpm),
+    'energy_%': energy_,
+    'acousticness_%': acousticness_,
+    'in_spotify_playlists': np.log(in_spotify_playlists),
+    'speechiness_%': np.log(speechiness_),
+    'valence_%': valence_,
+    'artist_count': np.log(artist_count)
+}
 
-# After collecting input values
+input_df = pd.DataFrame(test_data, index=[0])
+
 if st.button("Make Prediction"):
-    input_features = [feature_values[feature] for feature in model_info["features"]]
-    input_data = pd.DataFrame([input_features], columns=model_info["features"])
-    prediction = model.predict(input_data)[0]
-    st.write(f"Predicted Danceability: {prediction[0]} %")
+    prediction = model.predict(input_df)
+    st.write(f"Predicted Danceability: {prediction[0][0]} %")
 
 
 
